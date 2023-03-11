@@ -110,7 +110,7 @@ public class Main {
 
         op = sc.next().charAt(0);
         switch(op) {
-                case '1': 
+            case '1': 
                 System.out.print("Quantidade de caminhos: ");
                 n = sc.nextInt();
                 System.out.println("Quantidade de registros a serem lidos por passada: ");
@@ -127,9 +127,11 @@ public class Main {
             case '2':
                 System.out.print("Quantidade de caminhos: ");
                 n = sc.nextInt();
+                System.out.println("Quantidade de registros a serem lidos por passada: ");
+                m = sc.nextInt();
                 try {
                     System.out.println("Aguarde...");
-                    OrdenacaoExterna.intercalacaoVariavel(n);
+                    OrdenacaoExterna.intercalacaoVariavel(n, m);
                     System.out.println("Ordenação completa: nome do arquivo \"dadosOrdenadoVariavel.bd\"");
                 } catch(Exception e) {
                     System.out.println("!! Erro !! " + e.getStackTrace());
@@ -137,6 +139,17 @@ public class Main {
                 menuOrdenacao();
                 break;
             case '3': 
+                System.out.print("Quantidade de caminhos: ");
+                n = sc.nextInt();
+                System.out.println("Quantidade de registros a serem lidos por passada: ");
+                m = sc.nextInt();
+                try {
+                    System.out.println("Aguarde...");
+                    OrdenacaoExterna.intercalacaoSubstituicao(n, m);
+                    System.out.println("Ordenação completa: nome do arquivo \"dadosOrdenadoSubstituicao.bd\"");
+                } catch(Exception e) {
+                    System.out.println("!! Erro !! " + e.getStackTrace());
+                }
                 menuOrdenacao();
                 break;
             case '4': menu(); break;
@@ -144,6 +157,8 @@ public class Main {
         }
     }
     /*
+     * Funcao que constroi um Book a partir dos input do usuario
+     * 
      * @param todos = se havera alteracao em todos os atributos de Book (create)
      */
     private static Book pedirBook() {
@@ -201,7 +216,6 @@ public class Main {
             int tmp = Integer.parseInt(s);
             String[] generos  = new String[tmp];
             if(tmp > 0) {
-                sc.nextLine();
                 System.out.println("Gêneros (um por linha): ");
                 for(int i = 0; i < tmp; i++) generos[i] = sc.nextLine();
             }
