@@ -13,10 +13,13 @@ public class Main {
     }
 
     private static void menu(){
-        char op;
+        char op, opIndice;
+        boolean indice = false;
+        int quant = 2147483647; // bd nao foi incializado
         try {
             RandomAccessFile arq = new RandomAccessFile("Books.bd", "r");
-            System.out.println("\nÚltimo id: " + arq.readInt() + "\n");
+            quant = arq.readInt();
+            System.out.println("\nÚltimo id: " + quant + "\n");
             arq.close();
         } catch (Exception e) {
             System.out.println("\n !!!!! Banco de Dados não inicializado !!!!! \n");
@@ -28,12 +31,37 @@ public class Main {
 
         op = sc.next().charAt(0);
         switch(op) {
-            case '1': try { 
-                            System.out.println("Nome do arquivo (aperte enter para utilizar o arquivo padrão): ");
-                            sc.nextLine();
-                            String bd = sc.nextLine();
-                            System.out.println("Aguarde...");
-                            Book.construirBD(bd);
+            case '1':  
+                        System.out.println("Nome do arquivo (aperte enter para utilizar o arquivo padrão): ");
+                        sc.nextLine();
+                        String bd = sc.nextLine();
+                            
+                        // Indexacao
+                        System.out.println("Deseja inicializar os arquivos de índice? (Essa ação pode levar alguns minutos, recomenda-se +/- 1000)");
+                        System.out.println("1. Sim, mas limitando a quantidade de registros");
+                        System.out.println("2. Sim, quero com todos os registros");
+                        System.out.println("3. Não, mas limitando a quantidade de registros");
+                        System.out.println("4. Não");
+
+                        opIndice = sc.next().charAt(0);
+                        switch(opIndice) {
+                            case '1': System.out.print("Quantidade desejada: ");
+                                        quant = sc.nextInt();
+                                        indice = true;
+                                        break;
+                            case '2': indice = true;
+                                        break;
+                            case '3': System.out.print("Quantidade desejada: ");
+                                        quant = sc.nextInt();
+                                        break;
+                            case '4': break;
+                        }
+
+                        System.out.println("Aguarde...");
+                        try {
+                            Book.construirBD(bd, quant);
+                            if(indice) ArvoreB.create();
+
                         } catch(Exception e) {
                             System.out.println(e.getStackTrace());
                             System.out.println("Arquivo necessário (padrão): \"BD.csv\"");

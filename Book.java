@@ -61,7 +61,7 @@ public class Book {
     /*
      * Construcao do BD inicial a ser utilizado
      */
-    public static void construirBD(String bd) throws Exception {
+    public static void construirBD(String bd, int stop) throws Exception {
         Scanner fread = new Scanner(new File((bd.length() == 0) ? "BD.csv" : bd));
         RandomAccessFile fwrite = new RandomAccessFile("Books.bd", "rw");
 
@@ -72,7 +72,7 @@ public class Book {
         
         linha = fread.nextLine(); // pular cabecalho
 
-        while(fread.hasNext()){
+        while(fread.hasNext() && stop-- >0){
             linha = fread.nextLine();
             b = toBook(linha, true);
             array = b.toByteArray();
@@ -414,6 +414,10 @@ public class Book {
         // registrar
         fileBD.seek(fileBD.length());
         fileBD.writeBoolean(true); // lapide
+
+        // Indexacao
+        ArvoreB.add(new Registro(b.id, fileBD.getFilePointer()));
+
         fileBD.writeInt(array.length);
         fileBD.write(array);
 
