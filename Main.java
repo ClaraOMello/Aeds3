@@ -1,5 +1,7 @@
+import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +29,7 @@ public class Main {
         System.out.println("1. Inicializar Banco de Dados");
         System.out.println("2. Operações com CRUD");
         System.out.println("3. Ordenações");
+        System.out.println("4. Indexação");
         System.out.println("\n(aperte qualquer outra tecla para sair)\n");
 
         op = sc.next().charAt(0);
@@ -37,9 +40,9 @@ public class Main {
                         String bd = sc.nextLine();
                             
                         // Indexacao
-                        System.out.println("Deseja inicializar os arquivos de índice? (Essa ação pode levar alguns minutos, recomenda-se +/- 1000)");
-                        System.out.println("1. Sim, mas limitando a quantidade de registros");
-                        System.out.println("2. Sim, quero com todos os registros");
+                        System.out.println("Deseja inicializar os arquivos de índice? (Essa ação pode levar alguns minutos)");
+                        System.out.println("1. Sim, mas limitando a quantidade de registros (Recomendado: 1000)");
+                        System.out.println("2. Sim, quero com todos os registros (+50.000)");
                         System.out.println("3. Não, mas limitando a quantidade de registros");
                         System.out.println("4. Não");
 
@@ -49,7 +52,8 @@ public class Main {
                                         quant = sc.nextInt();
                                         indice = true;
                                         break;
-                            case '2': indice = true;
+                            case '2':  System.out.println("Vai parecer que vai dar errado mas vai dar certo - processo mutio demorado");
+                                        indice = true;
                                         break;
                             case '3': System.out.print("Quantidade desejada: ");
                                         quant = sc.nextInt();
@@ -60,16 +64,21 @@ public class Main {
                         System.out.println("Aguarde...");
                         try {
                             Book.construirBD(bd, quant);
-                            if(indice) ArvoreB.create();
+                            if(indice) {
+                                ArvoreB.create();
+                                ListaInvertida.create();
+                            }
 
-                        } catch(Exception e) {
-                            System.out.println(e.getStackTrace());
+                        } catch(FileNotFoundException e) {
                             System.out.println("Arquivo necessário (padrão): \"BD.csv\"");
+                        } catch(Exception e) {
+                            System.out.println("Erro");
                         }
                         menu();
                     break;
             case '2': menuCRUD(); break;
             case '3': menuOrdenacao(); break;
+            case '4': menuIndexacao(); break;
             default: break;
         }
     }
@@ -122,8 +131,10 @@ public class Main {
                     break;
                 default: break;
             }
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivo não encontrado");
         } catch (Exception e) {
-            System.out.println(e.getStackTrace());
+            System.out.println("Erro");
         }
     }
     private static void menuOrdenacao(){
@@ -184,6 +195,68 @@ public class Main {
             default: break;
         }
     }
+    private static void menuIndexacao(){
+        char op = ' ';
+        String pesquisa;
+        ArrayList<Book> resultado = new ArrayList<>();
+        int id;
+        try {
+            RandomAccessFile arq = new RandomAccessFile("arvoreB", "r");
+            arq.close();
+
+            System.out.println("\t <<<<<<<<<<<<<<<<<<<<<< >>>>>>>>>>>>>>>>>>>>>\n");
+            System.out.println("1. Leitura em Arvore B");
+            System.out.println("2. Leitura em Hashing");
+            System.out.println("3. Leitura em Lista Invertida: gênero e título");
+            System.out.println("4. Leitura em Lista Invertida: gênero");
+            System.out.println("5. Leitura em Lista Invertida: título");
+            System.out.println("\n(aperte qualquer outra tecla para sair)\n");
+    
+            op = sc.next().charAt(0);
+        } catch (Exception e) {
+            System.out.println("\n !!!!! Índices não inicializados !!!!! \n");
+        } 
+        sc.nextLine();
+
+        if(op == '1') {
+            System.out.print("Id: ");
+            id = sc.nextInt();
+            try {
+                resultado.add(ArvoreB.read(id));
+            } catch (Exception e) {
+                System.out.println("Erro na leitura do arquivo 'arvoreB'");
+            }
+            
+        } else if(op == '2') {
+            System.out.println("Não implementado!");
+            //System.out.print("Id: ");
+            //id = sc.nextInt();
+
+        } else if (op == '3' || op == '4' || op == '5') {
+            System.out.print("Pesquisa: ");
+            pesquisa = sc.nextLine();
+            try {
+                if(op == '3') resultado = ListaInvertida.read(pesquisa);
+                else if(op == '4') resultado = ListaInvertida.read(pesquisa, (short)1);
+                else resultado = ListaInvertida.read(pesquisa, (short)0);
+            } catch (Exception e) {
+                System.out.println("Erro na leitura do arquivo 'indiceGenres' e/ou 'indiceTitle'");
+            }
+
+        } else if (op == ' ') {
+            menu();
+        }
+
+        if(op == '1' || op == '2' || op == '3' || op == '4' || op == '5') {
+            System.out.println("\t\t <<<< Resultado >>>> ");
+            for (Book b : resultado) {
+                System.out.println(" * " + b);
+            }
+            menuIndexacao();
+        }
+    }
+    
+    
     /*
      * Funcao que constroi um Book a partir dos input do usuario
      * 
