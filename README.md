@@ -15,10 +15,10 @@ Base de dados: [Kaggle - GoodReads Best books](https://www.kaggle.com/datasets/t
 
 ## Tp2 - Indexação
 
-* Índice [Árvore B de ordem 8](ArvoreB.java)
-    - Acesso a registro nessa indexação vai ser por item, ou seja, não haverá leitura sequencial (o que justificaria o uso de uma árvore B+ ou B*)
+[Índice Árvore B de ordem 8](ArvoreB.java)
+* Acesso a registro nessa indexação vai ser por item, ou seja, não haverá leitura sequencial (o que justificaria o uso de uma árvore B+ ou B*)
 
-* Índice [Hashing Estendido](Hashing.java)
+[Índice Hashing Estendido](Hashing.java)
 
-* Índice [Lista Invertida](ListaInvertida.java)
-    - Campos escolhidos: título e gêneros
+[Índice Lista Invertida](ListaInvertida.java)
+* Campos escolhidos: título e gêneros
