@@ -67,6 +67,7 @@ public class Main {
                             if(indice) {
                                 ArvoreB.create();
                                 ListaInvertida.create();
+                                Hashing.create();
                             }
 
                         } catch(FileNotFoundException e) {
@@ -210,6 +211,7 @@ public class Main {
             System.out.println("3. Leitura em Lista Invertida: gênero e título");
             System.out.println("4. Leitura em Lista Invertida: gênero");
             System.out.println("5. Leitura em Lista Invertida: título");
+            System.out.println("6. Voltar\n");
             System.out.println("\n(aperte qualquer outra tecla para sair)\n");
     
             op = sc.next().charAt(0);
@@ -228,9 +230,13 @@ public class Main {
             }
             
         } else if(op == '2') {
-            System.out.println("Não implementado!");
-            //System.out.print("Id: ");
-            //id = sc.nextInt();
+            System.out.print("Id: ");
+            id = sc.nextInt();
+            try {
+                resultado.add(Hashing.read(id));
+            } catch (Exception e) {
+                System.out.println("Erro na leitura do arquivo 'diretorioHash' e/ou 'hshingEstendido'");
+            }
 
         } else if (op == '3' || op == '4' || op == '5') {
             System.out.print("Pesquisa: ");
@@ -243,7 +249,7 @@ public class Main {
                 System.out.println("Erro na leitura do arquivo 'indiceGenres' e/ou 'indiceTitle'");
             }
 
-        } else if (op == ' ') {
+        } else if (op == ' ' || op == '6') {
             menu();
         }
 

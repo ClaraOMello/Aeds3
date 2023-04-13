@@ -3,6 +3,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.DecimalFormat;
@@ -64,6 +65,7 @@ public class Book {
     public static void construirBD(String bd, int stop) throws Exception {
         Scanner fread = new Scanner(new File((bd.length() == 0) ? "BD.csv" : bd));
         RandomAccessFile fwrite = new RandomAccessFile("Books.bd", "rw");
+        fwrite.setLength(0);
 
         String linha = "";
         Book b;
@@ -91,15 +93,15 @@ public class Book {
         fread.close();
         fwrite.close();
 
-        System.out.println("Transferência completa");
+        System.out.println("Transferência completa do BD");
     }
     
-    /*
+    /**
      * Funcao para transformar uma String em objeto Book
-     * @params String = linha descritiva de um Book
-     *         Boolean = Possibilitar invercao das variaveis month e day
-     *                   No csv original: data = MM/dd/uuuu
-     *                   No toString: data = dd/MM/uuuu
+     * @param   s Linha descritiva de um Book
+     * @param   csv Possibilitar invercao das variaveis month e day
+     *              No csv original: data = MM/dd/uuuu
+     *              No toString: data = dd/MM/uuuu
      * @return String convertida em Book
      */
     static private Book toBook(String s){  
@@ -416,7 +418,28 @@ public class Book {
         fileBD.writeBoolean(true); // lapide
 
         // Indexacao
-        ArvoreB.add(new Registro(b.id, fileBD.getFilePointer()));
+        try {
+            ArvoreB.add(new Registro(b.id, fileBD.getFilePointer()));
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivo 'arvoreB' não encontrado");
+        } catch (Exception e) {
+            System.out.println("Erro na Arvore B");
+        }
+        try {
+            ListaInvertida.add(b, fileBD.getFilePointer());
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivos da lista invertida não encontrados");
+        } catch (Exception e) {
+            System.out.println("Erro na Lista Invertida");
+        }
+        try {
+            Hashing.add(new Registro(b.id, fileBD.getFilePointer()));
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivos do Hashing não encontrados");
+        } catch (Exception e) {
+            System.out.println("Erro no Hashing");
+        }
+        
 
         fileBD.writeInt(array.length);
         fileBD.write(array);
