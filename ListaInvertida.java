@@ -16,9 +16,9 @@ public class ListaInvertida {
     static short TAM_LONG = Long.BYTES;
     
     public static void main(String[] args) throws Exception {
-        //create();
+        create();
         //escreverLista(new RandomAccessFile("indiceTitle", "rw"));
-        read("fiction fantasy");
+        System.out.println(read("throne"));
     }
 
     public static void create() throws Exception {
@@ -69,7 +69,7 @@ public class ListaInvertida {
         System.out.println("Listas invertidas criadas");
     }  
 
-    /*
+    /**
      * Adicionar um novo Book ao indice
      * @param   posRg = posicao do Book no arquivo
      */
@@ -250,7 +250,7 @@ public class ListaInvertida {
 
     }
 
-    /*
+    /**
      * Metodos para tratamento das palavras 
      * 
      * @return  palavras relevantes em ordem alfabetica
@@ -340,7 +340,7 @@ public class ListaInvertida {
         return tmp;
     }
     
-    /* 
+    /** 
      * Definicao das palavras que serao as stopWords
      * @param   ling = 0 -> Portugues
      *               = 1 -> Ingles
@@ -364,7 +364,7 @@ public class ListaInvertida {
         return tratamento(s, remove);
     }
     
-    /*
+    /**
      * Leitura de Books com base no input do usuario
      * @param   arq: 0 -> acessa somente o indiceTitle
      *                1 -> acessa somente o indiceGenres

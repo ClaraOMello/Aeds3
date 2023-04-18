@@ -42,7 +42,7 @@ public class OrdenacaoExterna {
         }
     }
 
-    /*
+    /**
      * Metodo de ordenacao externa atraves da intercalacao com selecao por substituicao
      * 
      * @param n = quantidade de caminhos
@@ -267,10 +267,11 @@ public class OrdenacaoExterna {
     }
 
 
-    /*
+    /**
      * Metodo de ordenacao externa atraves da intercalacao balanceada com blocos de tamanho variavel
      * 
-     * @param n = quantidade de caminhos
+     * @param n Quantidade de caminhos
+     * @param m Quantidade de registros cabiveis em memoria primaria
      */
     public static void intercalacaoVariavel(int n, int m) throws Exception {
         RandomAccessFile dados = new RandomAccessFile(bd, "rw"); // base de dados
@@ -416,11 +417,11 @@ public class OrdenacaoExterna {
     }
 
     
-     /*
+     /**
      * Metodo de ordenacao externa atraves da intercalacao balanceada comum
      * 
-     * @param n = quantidade de caminhos
-     * @param m = quantidade de registros cabiveis em um bloco (memoria primaria)
+     * @param n Quantidade de caminhos
+     * @param m Quantidade de registros cabiveis em um bloco (memoria primaria)
      */
     public static void intercalacaoComum(int n, int m) throws Exception {
         RandomAccessFile dados = new RandomAccessFile(bd, "rw"); // base de dados
@@ -608,8 +609,8 @@ public class OrdenacaoExterna {
         vetor[p2] = tmp;
     }
 
-    /*
-     * @params pos = identifica ate que posicao o vetor esta preenchido com dados validos
+    /**
+     * @param pos Identifica ate que posicao o vetor esta preenchido com dados validos
      */
     static void heapsort(Book[] v, int pos) {
         // Construcao do heap

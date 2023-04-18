@@ -12,10 +12,10 @@ import java.io.RandomAccessFile;
  */
 public class ArvoreB {
     static String bd = "Books.bd";
-    static int TAM_NO = 152; // tamanho de um no em bytes
+    static int TAM_NO = No.sizeOf(); // tamanho de um no em bytes
     public static void main(String args[]) throws Exception {
-        //Book.construirBD("");
-        //create();
+        Book.construirBD("", 50);
+        create();
         escreverArvore();
         //int[] ids = {1, 5, 90, 45, 37, 101, 156, 150};
         //for(int i=0; i<ids.length; i++) System.out.println(read(ids[i]));
@@ -119,9 +119,10 @@ public class ArvoreB {
             indice.close();
         }
     }
-    /*
+    
+    /**
      * Funcao recursiva que possibilita a fragmentacao dos nos em cascata
-     * @param   no = no que vai ser analisado
+     * @param   no No que vai ser analisado
      * @return  item promovido e novo no criado cuja posicao eh o ponteiro direito do registro promovido
      */
     private static Retorno add(Registro ri, No no) throws Exception {
@@ -163,7 +164,7 @@ public class ArvoreB {
                 indice.write(no.toByteArray());
 
             } else {
-                // caso o elemento caia na folha
+                // caso o elemento caiba na folha
                 no.addReg(ri, -1); // ponteiros de folhas sempre valem -1
                 fim.promovido = null;
                 fim.novoNo = null;
@@ -236,7 +237,7 @@ public class ArvoreB {
         return fim;
     }
     
-    /*
+    /**
      * Acesso a registros atraves da Arvore B 
      *
      * @param  id do Book a ser encontrado
@@ -286,7 +287,7 @@ public class ArvoreB {
     /*
      * Remover Book do indice de Arvore B
      */
-    public static void delete() {
+    public static void delete(int id) {
 
     }
 
@@ -372,6 +373,10 @@ class Registro {
 
     public int GetId() {
         return id;
+    }
+
+    public static int sizeOf() {
+        return Integer.BYTES + Long.BYTES;
     }
 }
 
@@ -482,28 +487,19 @@ class No extends Registro {
         return end;
     }
     
-    public int GetN() {
-        return n;
+    /* Espaco em bytes ocupados por um no em arquivo (representacao em arquivo nao inclui ordem nem pos) */
+    public static int sizeOf() { 
+        return Integer.BYTES + ordem*Long.BYTES + (ordem-1)*Registro.sizeOf();
     }
-    public Registro[] GetRegs() {
-        return r;
-    }
-    public Registro GetReg(int pos) {
-        return r[pos];
-    }
-    public long GetPos() {
-        return pos;
-    }
+
+    public int GetN() { return n; }
+    public Registro[] GetRegs() { return r; }
+    public Registro GetReg(int pos) { return r[pos]; }
+    public long GetPos() { return pos; }
     
-    public void SetN(int n){
-        this.n = n;
-    }
-    public void SetPos(long pos) {
-        this.pos = pos;
-    }
-    public void SetReg(int pos, Registro rg) {
-        r[pos] = rg.clone();
-    }
+    public void SetN(int n){ this.n = n; }
+    public void SetPos(long pos) { this.pos = pos; }
+    public void SetReg(int pos, Registro rg) { r[pos] = rg.clone(); }
 
 }
 
