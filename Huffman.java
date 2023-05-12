@@ -7,30 +7,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Huffman {
-    /*
-     * Arvore binaria --> hashMap(caracter, representação)
+
+    /**
+     * Inicialização para compactação do arquivo
+     * 
+     * @param arq nome do arquivo a ser compactado
+     * @return HashMap com todos os simbolos presentes no arquivo e suas representacoes em binario
+     * @throws IOException
      */
-    public static void main(String[] args) throws Exception {
-        String verifica = inicializar("teste.txt").toString();
-        System.out.println(verifica);
-        //System.out.println("Diferenças: " + verifica.compareTo("{A=1, B=011, C=001, D=000, R=010}")); //invalido
-        
-    }
+    private static HashMap<Byte, String> inicializar(String arq) throws IOException {
+        HashMap<Byte, Integer> frequencia = frequenciaCaracteres(arq);
 
-    /* Criação da árvore */
-    private static HashMap<Character, String> inicializar(String arq) throws IOException {
-        HashMap<Character, Integer> frequencia = frequenciaCaracteres(arq);
-
-        HashMap<Character, String> arvore = caracterToBits(construirArvore(frequencia));
+        HashMap<Byte, String> arvore = simboloToBits(construirArvore(frequencia));
 
         return arvore;
     }
-    // Identificar caracteres e frequencia
-    private static HashMap<Character, Integer> frequenciaCaracteres(String arq) throws IOException {
-        HashMap<Character, Integer> frequencia = new HashMap<>(256);
+
+    /**
+     * Calculo da frequencia de cada simbolo
+     * 
+     * @param arq nome do arquivo a ser compactado
+     * @return HashMap com todos os simbolos presentes no arquivo e suas frequencias no texto
+     * @throws IOException
+     */
+    private static HashMap<Byte, Integer> frequenciaCaracteres(String arq) throws IOException {
+        HashMap<Byte, Integer> frequencia = new HashMap<>(256);
         RandomAccessFile file;
-        String linha;
-        char caracter;
+        byte bits;
         try {
             file = new RandomAccessFile(arq, "r");
         } catch(FileNotFoundException e) {
@@ -38,31 +41,30 @@ public class Huffman {
             return null;
         }
         
-        frequencia.put('\n', -1);
         while(file.getFilePointer() < file.length()) {
-            linha = file.readLine();
-            frequencia.replace('\n', frequencia.get('\n')+1);
-            for(int i=0; i<linha.length(); i++) {
-                caracter = linha.charAt(i);
-                if(frequencia.containsKey(caracter)) {
-                    frequencia.replace(caracter, frequencia.get(caracter)+1);
-                } else {
-                    frequencia.put(caracter, 1);
-                }
-            } 
+            bits = file.readByte();
+            
+            if(frequencia.containsKey(bits)) {
+                frequencia.replace(bits, frequencia.get(bits)+1);
+            } else {
+                frequencia.put(bits, 1);
+            }
         }
-        if(frequencia.get('\n') == 0) frequencia.remove('\n');
         file.close();
         return frequencia;
     }
     
-    // Construir a arvore em si
-    private static NoHuffman construirArvore(HashMap<Character, Integer> frequencia) {
+    /**
+     * Construcao da arvore de Huffman
+     * @param frequencia HashMap com as frequencias dos simbolos
+     * @return raiz da arvore
+     */
+    private static NoHuffman construirArvore(HashMap<Byte, Integer> frequencia) {
         NoHuffman raiz = null;
 
         // Passar hash para Lista
         ArrayList<NoHuffman> lista = new ArrayList<>();
-        for(Map.Entry<Character, Integer> elem : frequencia.entrySet()) {
+        for(Map.Entry<Byte, Integer> elem : frequencia.entrySet()) {
             lista.add(new NoHuffman(elem.getKey(), elem.getValue()));
         }
 
@@ -77,18 +79,22 @@ public class Huffman {
         return raiz;
     }
 
-    // Determinar os bits que representam cada caracter
-    private static HashMap<Character, String> caracterToBits(NoHuffman raiz) {
-        return caracterToBits(raiz, "", new HashMap<Character, String>(256));
+    /**
+     * Definicao das representacoes de cada simbolo do texto
+     * @param raiz da arvore de Huffman
+     * @return HashMap com os simbolos do texto e suas representacoes
+     */
+    private static HashMap<Byte, String> simboloToBits(NoHuffman raiz) {
+        return simboloToBits(raiz, "", new HashMap<Byte, String>(256));
     }
-    private static HashMap<Character, String> caracterToBits(NoHuffman no, String codigo, HashMap<Character, String> arvore) {
+    private static HashMap<Byte, String> simboloToBits(NoHuffman no, String codigo, HashMap<Byte, String> arvore) {
         if(no.ehFolha()) {
             arvore.put(no.getSimbolo(), codigo);
         } else {
-            caracterToBits(no.esq, codigo + "0", arvore);
-            caracterToBits(no.dir, codigo + "1", arvore);
+            simboloToBits(no.esq, codigo + "0", arvore);
+            simboloToBits(no.dir, codigo + "1", arvore);
         }
-        
+
         return arvore;
     }
 
@@ -107,9 +113,9 @@ class NoHuffman {
     NoHuffman esq;
     NoHuffman dir;
     private boolean folha;
-    private char simbolo;
+    private byte simbolo;
     private int frequencia;
-    NoHuffman(char simbolo, int frequencia) {
+    NoHuffman(byte simbolo, int frequencia) {
         esq = null;
         dir = null;
         folha = true;
@@ -127,5 +133,5 @@ class NoHuffman {
     }
     public boolean ehFolha() { return folha; }
     public int getFrequencia() { return frequencia; }
-    public char getSimbolo() { return simbolo; }
+    public byte getSimbolo() { return simbolo; }
 }
