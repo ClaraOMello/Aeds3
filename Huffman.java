@@ -7,31 +7,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Huffman {
+    private static int versao = 1;
 
     /**
-     * Inicialização para compactação do arquivo
-     * 
+     * Inicialização para compactação do arquivo, inclui escrita da frequencia de cada simbolo no novo arquivo
      * @param arq nome do arquivo a ser compactado
      * @return HashMap com todos os simbolos presentes no arquivo e suas representacoes em binario
      * @throws IOException
      */
-    private static HashMap<Byte, String> inicializar(String arq) throws IOException {
-        HashMap<Byte, Integer> frequencia = frequenciaCaracteres(arq);
-
+    private static HashMap<Byte, String> inicializar(String leitura, RandomAccessFile escrita) throws IOException {
+        HashMap<Byte, Integer> frequencia = frequenciaSimbolos(leitura);
+        /* Escrever as frequencias para construcao de arvore na descompactacao */
+        escrita.writeInt(frequencia.size());
+        for (Map.Entry<Byte, Integer> entry : frequencia.entrySet()) {
+            escrita.writeByte(entry.getKey());
+            escrita.writeInt(entry.getValue());   
+        }
         HashMap<Byte, String> arvore = simboloToBits(construirArvore(frequencia));
-
         return arvore;
     }
 
     /**
      * Calculo da frequencia de cada simbolo
-     * 
      * @param arq nome do arquivo a ser compactado
      * @return HashMap com todos os simbolos presentes no arquivo e suas frequencias no texto
      * @throws IOException
      */
-    private static HashMap<Byte, Integer> frequenciaCaracteres(String arq) throws IOException {
-        HashMap<Byte, Integer> frequencia = new HashMap<>(256);
+    private static HashMap<Byte, Integer> frequenciaSimbolos(String arq) throws IOException {
+        HashMap<Byte, Integer> frequencia = new HashMap<>();
         RandomAccessFile file;
         byte bits;
         try {
@@ -85,6 +88,7 @@ public class Huffman {
      * @return HashMap com os simbolos do texto e suas representacoes
      */
     private static HashMap<Byte, String> simboloToBits(NoHuffman raiz) {
+        if(raiz == null) return null;
         return simboloToBits(raiz, "", new HashMap<Byte, String>(256));
     }
     private static HashMap<Byte, String> simboloToBits(NoHuffman no, String codigo, HashMap<Byte, String> arvore) {
@@ -94,18 +98,143 @@ public class Huffman {
             simboloToBits(no.esq, codigo + "0", arvore);
             simboloToBits(no.dir, codigo + "1", arvore);
         }
-
         return arvore;
     }
 
-    /* Compactação */
-    public static void compactar(String arqNome) {
+    /**
+     * Compactacao de arquivo
+     * @param arqNome
+     * @return false caso o arquivo para compactacao nao tenha sido encontrado
+     * @throws IOException
+     */
+    public static boolean compactar(String arqNome) throws IOException {
+        RandomAccessFile arqRead = null;
+        RandomAccessFile arqWrite;
+        String arqNovo;
+        HashMap<Byte, String> padroes;
+        String[] partes;
+        String bits = "";
+        int bitsLen;
+        byte byteEscrita;
+        int byteInt;
 
+        try {
+            arqRead = new RandomAccessFile(arqNome, "r");
+        } catch(FileNotFoundException e) {
+            System.out.println("Arquivo para compactação não encontrado");
+            return false;
+        }
+
+        // Criacao do arquivo de compactacao
+        partes = arqNome.split("\\.");
+        arqNovo = partes[0] + "HuffmanCompressao" + versao++;
+        arqNovo += (partes.length > 1) ? "." + partes[1] : "";        
+        arqWrite = new RandomAccessFile(arqNovo, "rw");
+        arqWrite.setLength(0);
+
+        padroes = inicializar(arqNome, arqWrite);
+
+        // Leitura do arqRead e escrita em arqWrite
+        while(arqRead.getFilePointer() < arqRead.length()) {
+            byteEscrita = arqRead.readByte();
+            bits += padroes.get(byteEscrita);
+
+            while(bits.length() >= 8) {
+                byteInt = Integer.parseInt(bits.substring(0, 8), 2);
+                arqWrite.write((byte) byteInt);
+                bits = (bits.length() > 8) ? bits.substring(8) : "";
+            }
+        }
+
+        // Escrita do ultimo byte e quantidade de bits validos nele
+        if(bits.length() > 0) {
+            bitsLen = bits.length();
+            for(int i=0; i<8-bitsLen; i++) bits += '0';
+            byteInt = Integer.parseInt(bits, 2);
+            arqWrite.write((byte) byteInt);
+            arqWrite.write((byte) bitsLen);
+        } else {
+            arqWrite.write((byte) -1);
+            arqWrite.write((byte) 0);
+        }
+
+        arqRead.close();
+        arqWrite.close();
+        return true;
     }
 
-    /* Descompactação */
-    public static void descompactar(String arqNome) {
+    /**
+     * Passar arquivo em bytes para uma unica string
+     * @param arqRead
+     * @return arquivo em forma de string
+     * @throws IOException
+     */
+    private static String lerArquivoByte(RandomAccessFile arqRead) throws IOException {
+        StringBuilder s = new StringBuilder("");
+        byte b;
+        while(arqRead.getFilePointer() < arqRead.length()) {
+            b = arqRead.readByte();
+            for(int i=7; i>=0; i--) {
+                s.append(b >> i & 1);
+            }
+        }
+        return s.toString();
+    }
+    /**
+     * Descompactacao de arquivo
+     * @param arqNome
+     * @return false caso o arquivo para descompactacao nao tenha sido encontrado
+     * @throws IOException
+     */
+    public static boolean descompactar(String arqNome) throws IOException {
+        HashMap<Byte, Integer> frequencia = new HashMap<>();
+        int tamanho;
+        NoHuffman raiz, no;
+        RandomAccessFile arqRead = null;
+        RandomAccessFile arqWrite;
+        String[] partes;
+        String compactado;
 
+        try {
+            arqRead = new RandomAccessFile(arqNome, "r");
+        } catch(FileNotFoundException e) {
+            System.out.println("Arquivo para descompactação não encontrado");
+            return false;
+        }
+
+        /* Determinar a raiz da arvore de Huffman */
+        tamanho = arqRead.readInt();
+        for(int i=0; i<tamanho; i++) {
+            frequencia.put(arqRead.readByte(), arqRead.readInt());
+        }
+        raiz = construirArvore(frequencia);
+        
+        /* Inicializar arquivo de descompressao */
+        partes = arqNome.split("Compressao");
+        arqNome = partes[0] + ((partes.length > 1) ? partes[1] : "");
+        arqWrite = new RandomAccessFile(arqNome, "rw");
+        arqWrite.setLength(0);
+        
+        /* Descomprimir */
+        compactado = lerArquivoByte(arqRead);
+        arqRead.close();
+        System.out.println("Byte to String OK");
+        tamanho = Integer.parseInt(compactado.substring(compactado.length()-8), 2);
+        no = raiz;
+        System.out.println("Entrou loop OK");
+        for(int i=0; i<=compactado.length()-16+tamanho; i++) {
+            if(no.ehFolha()) {
+                arqWrite.writeByte(no.getSimbolo());
+                no = raiz;
+                if(i<compactado.length()-16+tamanho) i--;
+            } else {
+                if(compactado.charAt(i) == '0') no = no.esq;
+                else no = no.dir;
+            }
+        }
+
+        arqWrite.close();
+        return true;
     }
 }
 
@@ -128,9 +257,7 @@ class NoHuffman {
         folha = false;
         this.frequencia = frequencia;
     }
-    public String toString() {
-        return simbolo + ": " + frequencia + " ";
-    }
+    public String toString() { return simbolo + ": " + frequencia + " "; }
     public boolean ehFolha() { return folha; }
     public int getFrequencia() { return frequencia; }
     public byte getSimbolo() { return simbolo; }
