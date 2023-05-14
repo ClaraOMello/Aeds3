@@ -22,3 +22,9 @@ Base de dados: [Kaggle - GoodReads Best books](https://www.kaggle.com/datasets/t
 
 [Índice Lista Invertida](ListaInvertida.java)
 * Campos escolhidos: título e gêneros
+
+## Tp3 - Compactação
+
+[Huffman](Huffman.java)
+
+[LZW](LZW.java)
