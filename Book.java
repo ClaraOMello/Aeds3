@@ -20,6 +20,10 @@ public class Book {
     private char[] isbn = new char[13];
     private String[] genres;
     private LocalDate firstPublishDate;
+    private static String nomeFileBD = "Books.bd";
+    public static void setBD(String nome) {
+        nomeFileBD = nome;
+    }
 
     Book() {
         likedPercent = 0;
@@ -64,7 +68,7 @@ public class Book {
      */
     public static void construirBD(String bd, int stop) throws Exception {
         Scanner fread = new Scanner(new File((bd.length() == 0) ? "BD.csv" : bd));
-        RandomAccessFile fwrite = new RandomAccessFile("Books.bd", "rw");
+        RandomAccessFile fwrite = new RandomAccessFile(nomeFileBD, "rw");
         fwrite.setLength(0);
 
         String linha = "";
@@ -399,7 +403,7 @@ public class Book {
     }
 
     public static Book create(Book b) throws Exception {
-        RandomAccessFile fileBD = new RandomAccessFile("Books.bd", "rw");
+        RandomAccessFile fileBD = new RandomAccessFile(nomeFileBD, "rw");
         int lid; // ultimo id
         byte[] array;
         
@@ -415,31 +419,7 @@ public class Book {
 
         // registrar
         fileBD.seek(fileBD.length());
-        fileBD.writeBoolean(true); // lapide
-
-        // Indexacao
-        try {
-            ArvoreB.add(new Registro(b.id, fileBD.getFilePointer()));
-        } catch (FileNotFoundException e) {
-            System.out.println("Arquivo 'arvoreB' não encontrado");
-        } catch (Exception e) {
-            System.out.println("Erro na Arvore B");
-        }
-        try {
-            ListaInvertida.add(b, fileBD.getFilePointer());
-        } catch (FileNotFoundException e) {
-            System.out.println("Arquivos da lista invertida não encontrados");
-        } catch (Exception e) {
-            System.out.println("Erro na Lista Invertida");
-        }
-        try {
-            Hashing.add(new Registro(b.id, fileBD.getFilePointer()));
-        } catch (FileNotFoundException e) {
-            System.out.println("Arquivos do Hashing não encontrados");
-        } catch (Exception e) {
-            System.out.println("Erro no Hashing");
-        }
-        
+        fileBD.writeBoolean(true); // lapide        
 
         fileBD.writeInt(array.length);
         fileBD.write(array);
@@ -448,7 +428,7 @@ public class Book {
         return b;
     }
     public static void create(String book) throws Exception {
-        RandomAccessFile fileBD = new RandomAccessFile("Books.bd", "rw");
+        RandomAccessFile fileBD = new RandomAccessFile(nomeFileBD, "rw");
         Book b = toBook(book);
         int lid; // ultimo id
         byte[] array;
@@ -472,7 +452,7 @@ public class Book {
         fileBD.close();
     }
     public static Book read(int id) throws Exception {
-        RandomAccessFile fileBD = new RandomAccessFile("Books.bd", "r");
+        RandomAccessFile fileBD = new RandomAccessFile(nomeFileBD, "r");
         Book b = null;
         boolean achou = false;
         int len = 0, eof = 0; // tamanho do registro, lapide/fim do arquivo
@@ -510,7 +490,7 @@ public class Book {
         return b;
     }
     public static Book update(int id, Book b) throws Exception {
-        RandomAccessFile fileBD = new RandomAccessFile("Books.bd", "rw");
+        RandomAccessFile fileBD = new RandomAccessFile(nomeFileBD, "rw");
         b.id = id;
         boolean achou = false;
         int len = 0, eof = 0; // tamanho do registro, lapide/fim do arquivo
@@ -558,7 +538,7 @@ public class Book {
         return b;
     }
     public static Book delete(int id)  throws Exception {
-        RandomAccessFile fileBD = new RandomAccessFile("Books.bd", "rw");
+        RandomAccessFile fileBD = new RandomAccessFile(nomeFileBD, "rw");
         Book b = null;
         boolean achou = false;
         int len = 0, eof = 0; // tamanho do registro, lapide/fim do arquivo

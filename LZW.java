@@ -5,21 +5,6 @@ import java.util.ArrayList;
 
 public class LZW {
     private static int versao = 1;
-    public static void main(String[] args) throws Exception {
-        String arq = "teste";
-        RandomAccessFile raf = new RandomAccessFile("teste.bd", "rw");
-        raf.setLength(0);
-        for(int i =0; i<9; i++) {
-            raf.writeByte(12);
-            raf.writeByte(121);
-            raf.writeByte(1);
-            raf.writeByte(90);
-        }
-        raf.close();
-
-        compactar(arq + ".bd");
-        descompactar(arq + "LZWCompressao1.bd");
-    }
 
     private static String byteToString(Byte b) {
         String bString = "";
@@ -27,6 +12,10 @@ public class LZW {
             bString += b >> i & 1;
         }
         return bString;
+    }
+    private static byte stringToByte(String s) {
+        int valorInteiro =Integer.parseInt(s, 2);
+        return (byte) valorInteiro;
     }
     
     /**
@@ -61,7 +50,7 @@ public class LZW {
         file.writeInt(dicionario.size());
 
         for(int i=0; i<dicionario.size(); i++) {
-            file.writeByte(Byte.parseByte(dicionario.get(i), 2));
+            file.writeByte(stringToByte(dicionario.get(i)));
         }
     }
 
@@ -115,13 +104,12 @@ public class LZW {
                 token = dicionario.indexOf(prefixo);
             } else {
                 dicionario.add(prefixo);
-                arqWrite.writeInt(token);
+                arqWrite.writeShort(token);
                 prefixo = prefixo.substring(prefixo.length() - 8);
                 token = dicionario.indexOf(prefixo);
             }
         }
-        arqWrite.writeInt(token);
-        System.out.println(dicionario);
+        arqWrite.writeShort(token);
         
         arqRead.close();
         arqWrite.close();
@@ -144,7 +132,7 @@ public class LZW {
         try {
             arqRead = new RandomAccessFile(arq, "r");
         } catch(FileNotFoundException e) {
-            System.out.println("Arquivo para compactação não encontrado");
+            System.out.println("Arquivo para descompactação não encontrado");
             return false;
         }
 
@@ -154,15 +142,16 @@ public class LZW {
         arqWrite = new RandomAccessFile(arq, "rw");
         arqWrite.setLength(0);
 
-        int cont = 0;
         /* Descompactacao */
         dicionario = arquivoParaDicionario(arqRead);
         while(arqRead.getFilePointer() < arqRead.length()) {
-            token = arqRead.readInt();
-            escrita = dicionario.get(token);
+            token = arqRead.readUnsignedShort();
+            if (token == dicionario.size()) {
+                escrita = prefixo + prefixo.substring(0, 8);
+            } else escrita = dicionario.get(token);
 
             for(int i=0; i<escrita.length(); i+=8) {
-                arqWrite.writeByte(Byte.parseByte(escrita.substring(i, i+8), 2));
+                arqWrite.writeByte(stringToByte(escrita.substring(i, i+8)));
             } 
             
             prefixo += escrita.substring(0, 8);
@@ -170,10 +159,8 @@ public class LZW {
             if(dicionario.contains(prefixo)) {
             } else {
                 dicionario.add(prefixo);
-                System.out.println(prefixo);
                 prefixo = escrita;
             }
-            //System.out.println(cont++ + " " +dicionario);
         }
 
         arqRead.close();

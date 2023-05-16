@@ -1,4 +1,6 @@
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -8,10 +10,10 @@ import java.util.regex.Pattern;
 
 public class Main {
     public static Scanner sc = new Scanner(System.in);
+    private static String bd = "Books.bd";
 
     public static void main(String args[]) throws Exception {
         menu();
-        
     }
 
     private static void menu(){
@@ -20,9 +22,10 @@ public class Main {
         int quant = 2147483647; // bd nao foi incializado
         long time = 0;
         try {
-            RandomAccessFile arq = new RandomAccessFile("Books.bd", "r");
+            RandomAccessFile arq = new RandomAccessFile(bd, "r");
             quant = arq.readInt();
-            System.out.println("\nÚltimo id: " + quant + "\n");
+            System.out.println("\n <<<<<< " + bd + " >>>>>>");
+            System.out.println("Último id: " + quant + "\n");
             arq.close();
         } catch (Exception e) {
             System.out.println("\n !!!!! Banco de Dados não inicializado !!!!! \n");
@@ -31,15 +34,12 @@ public class Main {
         System.out.println("2. Operações com CRUD");
         System.out.println("3. Ordenações");
         System.out.println("4. Indexação");
+        System.out.println("5. Compactação");
         System.out.println("\n(aperte qualquer outra tecla para sair)\n");
 
         op = sc.next().charAt(0);
         switch(op) {
-            case '1':  
-                        System.out.println("Nome do arquivo (aperte enter para utilizar o arquivo padrão): ");
-                        sc.nextLine();
-                        String bd = sc.nextLine();
-                            
+            case '1':     
                         // Indexacao
                         System.out.println("Deseja inicializar os arquivos de índice? (Essa ação pode levar alguns minutos)");
                         System.out.println("1. Sim, mas limitando a quantidade de registros (Recomendado: 1000)");
@@ -53,7 +53,7 @@ public class Main {
                                         quant = sc.nextInt();
                                         indice = true;
                                         break;
-                            case '2':  System.out.println("Vai parecer que vai dar errado mas vai dar certo - processo mutio demorado");
+                            case '2':  System.out.println("...");
                                         indice = true;
                                         break;
                             case '3': System.out.print("Quantidade desejada: ");
@@ -64,7 +64,7 @@ public class Main {
 
                         System.out.println("Aguarde...");
                         try {
-                            Book.construirBD(bd, quant);
+                            Book.construirBD("", quant);
                             if(indice) {
                                 time = System.currentTimeMillis();
                                 ArvoreB.create();
@@ -83,7 +83,7 @@ public class Main {
                             }
 
                         } catch(FileNotFoundException e) {
-                            System.out.println("Arquivo necessário (padrão): \"BD.csv\"");
+                            System.out.println("Arquivo necessário: \"BD.csv\"");
                         } catch(Exception e) {
                             System.out.println("Erro");
                         }
@@ -92,6 +92,7 @@ public class Main {
             case '2': menuCRUD(); break;
             case '3': menuOrdenacao(); break;
             case '4': menuIndexacao(); break;
+            case '5': menuCompactacao(); break;
             default: break;
         }
     }
@@ -287,9 +288,108 @@ public class Main {
             menuIndexacao();
         }
     }
+    private static void menuCompactacao() {
+        char op;
+        int versao; // versao do arquivo de descompactacao
+        long time;
+
+        System.out.println("\t <<<<<<<<<<<<<<<<<<<<<< Compactação >>>>>>>>>>>>>>>>>>>>>\n");
+        System.out.println("1. Compactar Banco de Dados");
+        System.out.println("2. Descompactar Banco de Dados");
+        System.out.println("3. Trocar o Banco de Dados");
+        System.out.println("4. Voltar\n");
+
+        op = sc.next().charAt(0);
+        switch(op) {
+            case '1': 
+                try {
+                    time = System.currentTimeMillis();
+                    LZW.compactar(bd);
+                    time = System.currentTimeMillis() - time;
+                    System.out.println("Compactação LZW concluída em: " + (double)time/1000 + "s");
+                } catch (IOException e) {
+                    System.out.println("Erro na leitura do arquivo em LZW");
+                }
+                try {
+                    time = System.currentTimeMillis();
+                    Huffman.compactar(bd);
+                    time = System.currentTimeMillis() - time;
+                    System.out.println("Compactação Huffman concluída em: " + (double)time/1000 + "s");
+                } catch (IOException e) {
+                    System.out.println("Erro na leitura do arquivo em Huffman");
+                }
+                menuCompactacao();
+                break;
+
+            case '2':
+                System.out.println("Qual a versão? ");
+                versao = sc.nextInt();
+                try {
+                    time = System.currentTimeMillis();
+                    LZW.descompactar("BooksLZWCompressao" + versao + ".bd");
+                    time = System.currentTimeMillis() - time;
+                    System.out.println("Descompactação LZW concluída em: " + (double)time/1000 + "s");
+                } catch (IOException e) {
+                    System.out.println("Erro na descompactação do arquivo em LZW");
+                }
+                try {
+                    time = System.currentTimeMillis();
+                    Huffman.descompactar("BooksHuffmanCompressao" + versao + ".bd");
+                    time = System.currentTimeMillis() - time;
+                    System.out.println("Descompactação Huffman concluída em: " + (double)time/1000 + "s");
+                } catch (IOException e) {
+                    System.out.println("Erro na descompactação do arquivo em Huffman");
+                }
+                menuCompactacao();
+                break;
+
+            case '3': 
+                File pasta = new File(System.getProperty("user.dir"));
+                String[] bdPossiveis = new String[10];
+                int quant = 0, arqIndice;
+                if (pasta.exists() && pasta.isDirectory()) {
+                    File[] arquivos = pasta.listFiles();
+        
+                    bdPossiveis[quant++] = "Books.bd";
+                    if (arquivos != null) {
+                        for (File arquivo : arquivos) {
+                            if(arquivo.getName().contains("BooksHuffman") && !arquivo.getName().contains("Compressao")) {
+                                bdPossiveis[quant++] = arquivo.getName();
+                            } else if(arquivo.getName().contains("BooksLZW") && !arquivo.getName().contains("Compressao")) {
+                                bdPossiveis[quant++] = arquivo.getName();
+                            }
+                        }
+                    }
+
+                    if(quant == 0) {
+                        System.out.println("Não há nenhum arquivo descompactado");
+                    } else {
+                        System.out.println("0. Cancelar");
+                        for(int i=0; i<quant; i++) {
+                            System.out.print(i+1 + ". " + bdPossiveis[i]);
+                            if(bdPossiveis[i].compareTo(bd) == 0) System.out.println("  (EM USO)");
+                            else System.out.println();
+                        }
+                        System.out.println("Escolha o arquivo para substitução do BD atual: ");
+                        arqIndice = sc.nextInt();
+                        if(arqIndice == 0) menuCompactacao();
+                        else if(arqIndice > 0 && arqIndice <= quant) {
+                            bd = bdPossiveis[arqIndice-1];
+                            Book.setBD(bdPossiveis[arqIndice-1]);
+                            menu();
+                        }
+                    }
+                } else {
+                    System.out.println("Nenhum arquivo encontrado");
+                }
+                break;
+            case '4': menu(); break;
+
+            default: break;
+        }
+    }
     
-    
-    /*
+    /**
      * Funcao que constroi um Book a partir dos input do usuario
      * 
      * @param todos = se havera alteracao em todos os atributos de Book (create)

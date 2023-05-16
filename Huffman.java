@@ -218,10 +218,8 @@ public class Huffman {
         /* Descomprimir */
         compactado = lerArquivoByte(arqRead);
         arqRead.close();
-        System.out.println("Byte to String OK");
         tamanho = Integer.parseInt(compactado.substring(compactado.length()-8), 2);
         no = raiz;
-        System.out.println("Entrou loop OK");
         for(int i=0; i<=compactado.length()-16+tamanho; i++) {
             if(no.ehFolha()) {
                 arqWrite.writeByte(no.getSimbolo());
