@@ -26,5 +26,7 @@ Base de dados: [Kaggle - GoodReads Best books](https://www.kaggle.com/datasets/t
 ## Tp3 - Compactação
 
 [Huffman](Huffman.java)
+* Método estatístico
 
 [LZW](LZW.java)
+* Método de compactação com dicionário

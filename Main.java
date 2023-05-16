@@ -18,6 +18,7 @@ public class Main {
         char op, opIndice;
         boolean indice = false;
         int quant = 2147483647; // bd nao foi incializado
+        long time = 0;
         try {
             RandomAccessFile arq = new RandomAccessFile("Books.bd", "r");
             quant = arq.readInt();
@@ -65,9 +66,20 @@ public class Main {
                         try {
                             Book.construirBD(bd, quant);
                             if(indice) {
+                                time = System.currentTimeMillis();
                                 ArvoreB.create();
+                                time = System.currentTimeMillis() - time;
+                                System.out.println("Tempo de criação: " + (double)time/1000 + "s\n");
+                                
+                                time = System.currentTimeMillis();
                                 ListaInvertida.create();
+                                time = System.currentTimeMillis() - time;
+                                System.out.println("Tempo de criação: " + (double)time/1000 + "s\n");
+                                
+                                time = System.currentTimeMillis();
                                 Hashing.create();
+                                time = System.currentTimeMillis() - time;
+                                System.out.println("Tempo de criação: " + (double)time/1000 + "s\n");
                             }
 
                         } catch(FileNotFoundException e) {
@@ -199,6 +211,7 @@ public class Main {
     private static void menuIndexacao(){
         char op = ' ';
         String pesquisa;
+        long time = 0;
         ArrayList<Book> resultado = new ArrayList<>();
         int id;
         try {
@@ -224,7 +237,9 @@ public class Main {
             System.out.print("Id: ");
             id = sc.nextInt();
             try {
+                time = System.currentTimeMillis();
                 resultado.add(ArvoreB.read(id));
+                time = System.currentTimeMillis() - time;
             } catch (Exception e) {
                 System.out.println("Erro na leitura do arquivo 'arvoreB'");
             }
@@ -233,7 +248,9 @@ public class Main {
             System.out.print("Id: ");
             id = sc.nextInt();
             try {
+                time = System.currentTimeMillis();
                 resultado.add(Hashing.read(id));
+                time = System.currentTimeMillis() - time;
             } catch (Exception e) {
                 System.out.println("Erro na leitura do arquivo 'diretorioHash' e/ou 'hshingEstendido'");
             }
@@ -242,9 +259,17 @@ public class Main {
             System.out.print("Pesquisa: ");
             pesquisa = sc.nextLine();
             try {
-                if(op == '3') resultado = ListaInvertida.read(pesquisa);
-                else if(op == '4') resultado = ListaInvertida.read(pesquisa, (short)1);
-                else resultado = ListaInvertida.read(pesquisa, (short)0);
+                if(op == '3') {
+                    time = System.currentTimeMillis();
+                    resultado = ListaInvertida.read(pesquisa);
+                } else if(op == '4') {
+                    time = System.currentTimeMillis();
+                    resultado = ListaInvertida.read(pesquisa, (short)1);
+                } else {
+                    time = System.currentTimeMillis();
+                    resultado = ListaInvertida.read(pesquisa, (short)0);
+                }
+                time = System.currentTimeMillis() - time;
             } catch (Exception e) {
                 System.out.println("Erro na leitura do arquivo 'indiceGenres' e/ou 'indiceTitle'");
             }
@@ -258,6 +283,7 @@ public class Main {
             for (Book b : resultado) {
                 System.out.println(" * " + b);
             }
+            System.out.println("Tempo de busca: " + (double)time/1000 + "s");
             menuIndexacao();
         }
     }
