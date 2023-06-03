@@ -2,7 +2,7 @@
 
 Base de dados: [Kaggle - GoodReads Best books](https://www.kaggle.com/datasets/thedevastator/comprehensive-overview-of-52478-goodreads-best-b)
 
-## Tp1 - CRUD e ordenação externa
+## Tp1 - CRUD e Ordenação Externa
 
 [Book](Book.java)
 * Construção da base de dados através de um csv
@@ -30,3 +30,11 @@ Base de dados: [Kaggle - GoodReads Best books](https://www.kaggle.com/datasets/t
 
 [LZW](LZW.java)
 * Método de compactação com dicionário
+
+## Tp4 - Casamento de Padrões
+[KMP](KMP.java)
+* Diagrama de estados
+
+[Boyer Moore](BoyerMoore.java)
+* Deslocamento por sufixo bom
+* Deslocamento por caráter ruim

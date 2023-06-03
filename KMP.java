@@ -1,0 +1,112 @@
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+public class KMP {
+    /**
+     * Identifica quantas vezes o padrao desejado aparece no arquivo
+     * @param padrao
+     * @param arq
+     * @return quantidade de padroes encontrados em arq
+     * @throws IOException
+     */
+    public static int encontrar(String padrao, RandomAccessFile arq) throws IOException {
+        int encontrados = 0, estado = 0;
+        String texto = arqToString(arq);
+        int[] transicao = transicaoFalha(padrao);
+
+        for(int i=0; i<texto.length(); i++) {
+
+            /* volta estados anteriores ate que encontre um que satisfaca a entrada do texto  */
+            while (estado > 0 && texto.charAt(i) != padrao.charAt(estado)) {
+                estado = transicao[estado-1];
+            }
+
+            if(texto.charAt(i) == padrao.charAt(estado)) {
+                estado++;
+
+            } else estado = 0;
+            
+            if (estado == padrao.length()) { // se padrao for encontrado
+                encontrados++;
+                estado = transicao[estado-1];
+            }
+        }
+        return encontrados;
+    }
+
+    /**
+     * Identifica a quantidade de comparacoes efetuadas para que todas as ocorrencias do padrao desejado sejam encontradas no arquivo 
+     * @param padrao
+     * @param arq
+     * @return quantidade de comparacoes efetuadas para encontrar todos os padroes
+     * @throws IOException
+     */
+    public static int encontrarComparacoes(String padrao, RandomAccessFile arq) throws IOException {
+        return encontrarComparacoes(padrao, arq, false);
+    }
+    /**
+     * Permite definir condicao de parada da leitura do arquivo
+     * @param ocorrenciaUnica false: arquivo eh lido ate o fim
+     *                        true: condicao de parada eh a primeira ocorrencia do padrao
+     */
+    public static int encontrarComparacoes(String padrao, RandomAccessFile arq, boolean ocorrenciaUnica) throws IOException {
+        int comparacoes = 0, estado = 0;
+        String texto = arqToString(arq);
+        int[] transicao = transicaoFalha(padrao);
+
+        for(int i=0; i<texto.length(); i++) {
+
+            /* volta estados anteriores ate que encontre um que satisfaca a entrada do texto  */
+            while (estado > 0 && texto.charAt(i) != padrao.charAt(estado)) {
+                estado = transicao[estado-1];
+                comparacoes++;
+            }
+
+            if(texto.charAt(i) == padrao.charAt(estado)) {
+                estado++;
+
+            } else estado = 0;
+
+            comparacoes++;
+            
+            if (estado == padrao.length()) { // se padrao for encontrado
+                estado = transicao[estado-1];
+                if(ocorrenciaUnica) i=texto.length();
+            }
+        }
+        return comparacoes;
+    }
+
+    /**
+     * Constroi a transicao de falha do padrao a ser encontrado
+     * @param padrao
+     * @return diagrama de estados do padrao
+     */
+    protected static int[] transicaoFalha(String padrao) {
+        int[] vetorFalha = new int[padrao.length()];
+
+        vetorFalha[0] = 0;
+        for (int i = 1, j; i < vetorFalha.length; i++) {
+            j = vetorFalha[i-1];
+
+            /* Percorre pelo "automato" ate encontrar onde o carater na posicao i possa ser encaixado */
+            while(j>0 && padrao.charAt(i) != padrao.charAt(j)) {
+                j = vetorFalha[j-1];
+            }
+
+            if (padrao.charAt(i) == padrao.charAt(j)) {
+                vetorFalha[i] = j+1;
+            } else vetorFalha[i] = 0; // se o carater nao eh prefixo
+        }
+
+        return vetorFalha;
+    }
+
+    private static String arqToString(RandomAccessFile arq) throws IOException {
+        StringBuilder s = new StringBuilder();
+        while(arq.getFilePointer() < arq.length()) {
+            s.append(arq.readLine());
+        }
+        return s.toString();
+    }
+}
