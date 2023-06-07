@@ -1,4 +1,7 @@
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 
@@ -41,11 +44,13 @@ public class BoyerMoore {
             if(posPadrao == -1) { // padrao encontrado
                 encontrados++;
                 posPadrao = 0; /* retornar posPadrao para posicao inicial do vetor para calculo posterior */
+                if(ocorrenciaUnica) break;
             }
             
             pulo = (caraterRuim.get(texto.charAt(i+posPadrao)) == null) ? -1 : caraterRuim.get(texto.charAt(i+posPadrao));
             pulo = posPadrao - pulo; 
             if(sufixoBom[posPadrao] > pulo) pulo = sufixoBom[posPadrao];
+            comparacoes++;
         }
         return (comparar) ? comparacoes : encontrados;
     }
@@ -151,9 +156,12 @@ public class BoyerMoore {
     }
 
     private static String arqToString(RandomAccessFile arq) throws IOException {
-        StringBuilder s = new StringBuilder();
-        while(arq.getFilePointer() < arq.length()) {
-            s.append(arq.readLine());
+        StringBuilder s = new StringBuilder(100000);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(arq.getFD())));
+        char[] buffer = new char[100000];
+        int bytesRead;
+        while ((bytesRead = reader.read(buffer)) != -1) {
+            s.append(buffer, 0, bytesRead);
         }
         return s.toString();
     }

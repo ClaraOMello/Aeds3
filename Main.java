@@ -35,6 +35,7 @@ public class Main {
         System.out.println("3. Ordenações");
         System.out.println("4. Indexação");
         System.out.println("5. Compactação");
+        System.out.println("6. Casamento de Padrões");
         System.out.println("\n(aperte qualquer outra tecla para sair)\n");
 
         op = sc.next().charAt(0);
@@ -93,6 +94,7 @@ public class Main {
             case '3': menuOrdenacao(); break;
             case '4': menuIndexacao(); break;
             case '5': menuCompactacao(); break;
+            case '6': menuPadroes(); break;
             default: break;
         }
     }
@@ -388,7 +390,39 @@ public class Main {
             default: break;
         }
     }
-    
+    private static void menuPadroes() {
+        char op;
+        String padrao, arq = "";
+        System.out.println("\t <<<<<<<<<<<<<<<<<<<<<< Casamento de Padrões >>>>>>>>>>>>>>>>>>>>>\n");
+        System.out.println("1. KMP");
+        System.out.println("2. Boyer Moore");
+        System.out.println("3. Voltar\n");
+
+        op = sc.next().charAt(0);
+
+        if(op == '1' || op == '2') {
+            System.out.println("Padrão a ser encontrado: ");
+            sc.nextLine();
+            padrao = sc.nextLine();
+            System.out.println("Arquivo de busca (aperte enter para arquivo padrao \"BD.csv\"): ");
+            //sc.nextLine();
+            arq = sc.nextLine();
+            arq = (arq == "") ? "BD.csv": arq;
+
+            try {
+                if(op == '1') {
+                    System.out.println(KMP.encontrar(padrao, new RandomAccessFile(arq, "r"), true) + " comparações");
+                } else {
+                    System.out.println(BoyerMoore.encontrar(padrao, new RandomAccessFile(arq, "r"), true) + " comparações");
+                }
+            } catch (IOException e) {
+                System.out.println("Erro na leitura do arquivo");
+            }
+            menuPadroes();
+
+        } else if (op == '3') menu();
+    }
+
     /**
      * Funcao que constroi um Book a partir dos input do usuario
      * 
