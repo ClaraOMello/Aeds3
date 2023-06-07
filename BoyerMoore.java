@@ -3,13 +3,58 @@ import java.io.RandomAccessFile;
 import java.util.HashMap;
 
 public class BoyerMoore {
-    public static int encontrar(String padrao, RandomAccessFile arq) {
+    /**
+     * Metodo de busca de ocorrencia de padroes. Por padrao considera nao parar na primeira ocorrencia da palavra
+     * @param padrao
+     * @param arq
+     * @return quantidade de comparacoes feitas para encontrar todos os padroes
+     * @throws IOException
+     */
+    public static int encontrar(String padrao, RandomAccessFile arq) throws IOException {
+        return encontrar(padrao, arq, false, true);
+    }
+    /**
+     * @param ocorrenciaUnica define se a busca parara na primeira ocorrencia do padrao
+     */
+    public static int encontrar(String padrao, RandomAccessFile arq, boolean ocorrenciaUnica) throws IOException {
+        return encontrar(padrao, arq, ocorrenciaUnica, true);
+    }
+    /**
+     * @param comparar define se o retorno da funcao sera a quantidade de comparacoes ou de padroes identificados
+     * @return
+     * @throws IOException
+     */
+    protected static int encontrar(String padrao, RandomAccessFile arq, boolean ocorrenciaUnica, boolean comparar) throws IOException {
         int encontrados = 0, comparacoes = 0;
+        String texto = arqToString(arq);
+        int posPadrao, pulo;
+        int[] sufixoBom = sufixoBom(padrao);
+        HashMap<Character, Integer> caraterRuim = caraterRuim(padrao);
 
-        return encontrados;
-
+        for (int i = 0; i+padrao.length() <= texto.length(); i += pulo) {
+            posPadrao = padrao.length()-1;
+            
+            while (posPadrao >= 0 && texto.charAt(posPadrao+i) == padrao.charAt(posPadrao)) {
+                posPadrao--;
+                comparacoes++;
+            }
+            if(posPadrao == -1) { // padrao encontrado
+                encontrados++;
+                posPadrao = 0; /* retornar posPadrao para posicao inicial do vetor para calculo posterior */
+            }
+            
+            pulo = (caraterRuim.get(texto.charAt(i+posPadrao)) == null) ? -1 : caraterRuim.get(texto.charAt(i+posPadrao));
+            pulo = posPadrao - pulo; 
+            if(sufixoBom[posPadrao] > pulo) pulo = sufixoBom[posPadrao];
+        }
+        return (comparar) ? comparacoes : encontrados;
     }
 
+    /**
+     * Constroi vetor de deslocamento de sufixo bom
+     * @param padrao
+     * @return
+     */
     protected static int[] sufixoBom(String padrao) {
         int[] deslocamento = new int[padrao.length()];
         String sufixo;
@@ -19,7 +64,6 @@ public class BoyerMoore {
         for (int i = deslocamento.length-2; i >= 0; i--) {
             sufixo = padrao.substring(i+1, deslocamento.length);
             pos = infixoPrefixo(padrao, sufixo);
-            /* existe o sufixo como infixo, porem antecedido de algo diferente */
             if(pos == -1) {
                 pos = prefixoPartes(padrao, sufixo);
                 if(pos == -1) {
@@ -91,6 +135,11 @@ public class BoyerMoore {
         return posicao;
     }
     
+    /**
+     * Constroi hash de ultima ocorrencia para o deslocamento de carater ruim
+     * @param padrao
+     * @return
+     */
     protected static HashMap<Character, Integer> caraterRuim(String padrao) {
         HashMap<Character, Integer> hash = new HashMap<>();
         for (int i = padrao.length()-2; i >= 0; i--) {

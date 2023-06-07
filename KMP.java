@@ -10,47 +10,21 @@ public class KMP {
      * @throws IOException
      */
     public static int encontrar(String padrao, RandomAccessFile arq) throws IOException {
-        int encontrados = 0, estado = 0;
-        String texto = arqToString(arq);
-        int[] transicao = transicaoFalha(padrao);
-
-        for(int i=0; i<texto.length(); i++) {
-
-            /* volta estados anteriores ate que encontre um que satisfaca a entrada do texto  */
-            while (estado > 0 && texto.charAt(i) != padrao.charAt(estado)) {
-                estado = transicao[estado-1];
-            }
-
-            if(texto.charAt(i) == padrao.charAt(estado)) {
-                estado++;
-
-            } else estado = 0;
-            
-            if (estado == padrao.length()) { // se padrao for encontrado
-                encontrados++;
-                estado = transicao[estado-1];
-            }
-        }
-        return encontrados;
-    }
-
-    /**
-     * Identifica a quantidade de comparacoes efetuadas para que todas as ocorrencias do padrao desejado sejam encontradas no arquivo 
-     * @param padrao
-     * @param arq
-     * @return quantidade de comparacoes efetuadas para encontrar todos os padroes
-     * @throws IOException
-     */
-    public static int encontrarComparacoes(String padrao, RandomAccessFile arq) throws IOException {
-        return encontrarComparacoes(padrao, arq, false);
+        return encontrar(padrao, arq, false, true);
     }
     /**
      * Permite definir condicao de parada da leitura do arquivo
      * @param ocorrenciaUnica false: arquivo eh lido ate o fim
      *                        true: condicao de parada eh a primeira ocorrencia do padrao
      */
-    public static int encontrarComparacoes(String padrao, RandomAccessFile arq, boolean ocorrenciaUnica) throws IOException {
-        int comparacoes = 0, estado = 0;
+    public static int encontrar(String padrao, RandomAccessFile arq, boolean ocorrenciaUnica) throws IOException {
+        return encontrar(padrao, arq, ocorrenciaUnica, true);
+    }
+    /**
+     * @param comparar true: retorno eh a quantidade de comparacoes; false: retorno eh a quantidade de padroes identificados
+     */
+    protected static int encontrar(String padrao, RandomAccessFile arq, boolean ocorrenciaUnica, boolean comparar) throws IOException {
+        int encontrados = 0, comparacoes = 0, estado = 0;
         String texto = arqToString(arq);
         int[] transicao = transicaoFalha(padrao);
 
@@ -66,17 +40,18 @@ public class KMP {
                 estado++;
 
             } else estado = 0;
-
-            comparacoes++;
             
+            comparacoes++;
+
             if (estado == padrao.length()) { // se padrao for encontrado
+                encontrados++;
                 estado = transicao[estado-1];
                 if(ocorrenciaUnica) i=texto.length();
             }
         }
-        return comparacoes;
+        return (comparar) ? comparacoes : encontrados;
     }
-
+  
     /**
      * Constroi a transicao de falha do padrao a ser encontrado
      * @param padrao
