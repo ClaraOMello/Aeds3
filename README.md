@@ -38,3 +38,19 @@ Base de dados: [Kaggle - GoodReads Best books](https://www.kaggle.com/datasets/t
 [Boyer Moore](BoyerMoore.java)
 * Deslocamento por sufixo bom
 * Deslocamento por caráter ruim
+
+## Tp5 - Criptografia
+### Criptografia Simétrica
+Cifra de Substituição
+* Um símbolo é substituído por outro
+* Cifra de César
+    - chave = (char + x) % 26
+* Cifra de Vigenére 
+    - cada letra é deslocada um diferente número de posições de acordo com uma senha
+
+Cifra de Transposição
+* Reordenam os símbolos
+* [Cifra de Coluna](CifraDeColunas.java)
+
+### Criptografia Assimétrica
+* [RSA](RSA.java)
