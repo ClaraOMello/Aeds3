@@ -36,6 +36,7 @@ public class Main {
         System.out.println("4. Indexação");
         System.out.println("5. Compactação");
         System.out.println("6. Casamento de Padrões");
+        System.out.println("7. Criptografia");
         System.out.println("\n(aperte qualquer outra tecla para sair)\n");
 
         op = sc.next().charAt(0);
@@ -95,6 +96,7 @@ public class Main {
             case '4': menuIndexacao(); break;
             case '5': menuCompactacao(); break;
             case '6': menuPadroes(); break;
+            case '7': menuCriptografia(); break;
             default: break;
         }
     }
@@ -422,6 +424,47 @@ public class Main {
 
         } else if (op == '3') menu();
     }
+    private static void menuCriptografia() {
+        char op;
+        String texto, chave;
+        System.out.println("\t <<<<<<<<<<<<<<<<<<<<<< Criptografia >>>>>>>>>>>>>>>>>>>>>\n");
+        System.out.println("1. RSA");
+        System.out.println("2. Cifra de Colunas");
+        System.out.println("3. Voltar\n");
+
+        op = sc.next().charAt(0);
+
+        if(op == '1' || op == '2') {
+            System.out.println("Texto a ser criptografado: ");
+            sc.nextLine();
+            texto = sc.nextLine();
+
+            if(op == '1') {
+                System.out.print("Texto codificado: ");
+                int[] cifra = RSA.cifrar(texto);
+                for (int i : cifra) {
+                    System.out.print(i);
+                }
+                System.out.println("\nTexto decodificado: " + RSA.descifrar(cifra));
+
+            } else {
+                System.out.println("Chave (aperte enter para chave padrao \"CHAVE\"): ");
+                chave = sc.nextLine();
+                if (chave.length() > 0) {
+                    if (!CifraDeColunas.setChave(chave)) {
+                        System.out.println("Chave desejada inválida. Chave padrão será utilizada.");
+                    }
+                }
+
+                texto = CifraDeColunas.cifrar(texto);
+                System.out.println("Texto codificado: " + texto);
+                System.out.println("Texto decodificado: " + CifraDeColunas.descifrar(texto));
+            }
+            menuCriptografia();
+
+        } else if (op == '3') menu();
+    }
+ 
 
     /**
      * Funcao que constroi um Book a partir dos input do usuario

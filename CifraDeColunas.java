@@ -1,7 +1,7 @@
 import java.util.Arrays;
 
 public class CifraDeColunas {
-    static String chave = "CHAVE";
+    private static String chave = "CHAVE";
     public static void main(String[] args) {
         String padrao = "PROVA NA SEGUNDA FEIRA";
         String s = cifrar(padrao, chave);
@@ -9,10 +9,10 @@ public class CifraDeColunas {
         System.out.println(descifrar(s, chave));
     }
 
-    public String getChave() {
+    public static String getChave() {
         return chave;
     }
-    public boolean setChave(String chave) {
+    public static boolean setChave(String chave) {
         boolean repete = (chave.length() > 0) ? false : true;
         for (int i = 0; i < chave.length() && !repete; i++) {
             for (int j = i+1; j < chave.length() && !repete; j++) {
